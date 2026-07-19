@@ -103,6 +103,28 @@ npm run dev                             # → http://localhost:5173
 
 ---
 
+## Deploy
+
+**Frontend → Vercel.** In the Vercel project settings set **Root Directory = `frontend`**
+(framework auto-detects as Vite; `vercel.json` supplies the SPA rewrites), and add one env var:
+
+```
+VITE_API_BASE_URL=https://<your-backend-host>/api/v1
+```
+
+**Backend → Render / Railway / Fly** (anything with a persistent disk — *not* Vercel:
+SQLite, the Chroma index, and founder-photo uploads all live on the filesystem, which
+serverless platforms wipe between invocations). `backend/Dockerfile` deploys as-is; set:
+
+```
+OPENAI_API_KEY=...
+CORS_ORIGINS=https://<your-app>.vercel.app
+```
+
+and mount a disk (or point `DATABASE_URL` at managed Postgres) so data survives restarts.
+
+---
+
 ## Repo map
 ```
 backend/    FastAPI modular monolith (Memory / Intelligence / Experience)
