@@ -2,7 +2,7 @@ import { useFounder } from "@/api/hooks";
 import { TrendArrow, ConfidencePill } from "@/components/scores/ScoreViz";
 import { Card, EmptyState, Pill, SectionLabel, Spinner, StatTile } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ExternalLink, Snowflake } from "lucide-react";
+import { ArrowLeft, CircleAlert, CircleCheck, Database, ExternalLink, Snowflake, Sparkles } from "lucide-react";
 import {
   Line,
   LineChart,
@@ -48,6 +48,9 @@ export default function FounderPage() {
       <div className="grid grid-cols-4 gap-4">
         <StatTile
           label="Persistent Founder Score"
+          icon={Sparkles}
+          tone="brand"
+          gradient
           value={
             <span className="flex items-center gap-2">
               {f.founder_score ?? "—"}
@@ -55,11 +58,10 @@ export default function FounderPage() {
             </span>
           }
           sub="follows the founder across ventures — never resets"
-          valueClass="text-accent-soft"
         />
-        <StatTile label="Signals" value={f.data_quality.signal_count} sub="evidence points ingested" />
-        <StatTile label="Covered facets" value={f.data_quality.covered.length} valueClass="text-success" />
-        <StatTile label="Data gaps" value={f.data_quality.gaps.length} valueClass="text-danger" sub="disclosed, not fabricated" />
+        <StatTile label="Signals" value={f.data_quality.signal_count} sub="evidence points ingested" icon={Database} tone="founder" />
+        <StatTile label="Covered facets" value={f.data_quality.covered.length} icon={CircleCheck} tone="market" />
+        <StatTile label="Data gaps" value={f.data_quality.gaps.length} icon={CircleAlert} tone="danger" sub="disclosed, not fabricated" />
       </div>
 
       <div className="grid grid-cols-3 gap-6">

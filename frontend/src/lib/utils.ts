@@ -14,15 +14,18 @@ export function scoreColor(v: number | null | undefined): string {
   return "text-danger";
 }
 
-export const AXIS_META: Record<string, { label: string; color: string; bar: string }> = {
-  founder: { label: "Founder", color: "text-founder", bar: "bg-founder" },
-  market: { label: "Market", color: "text-market", bar: "bg-market" },
-  idea: { label: "Idea vs Market", color: "text-idea", bar: "bg-idea" },
+export const AXIS_META: Record<
+  string,
+  { label: string; color: string; hex: string; hexLight: string }
+> = {
+  founder: { label: "Founder", color: "text-founder", hex: "#6366f1", hexLight: "#a5b4fc" },
+  market: { label: "Market", color: "text-market", hex: "#10b981", hexLight: "#6ee7b7" },
+  idea: { label: "Idea vs Market", color: "text-idea", hex: "#f59e0b", hexLight: "#fcd34d" },
 };
 
 export const CONFIDENCE_META: Record<string, { label: string; cls: string }> = {
-  verified: { label: "Verified", cls: "bg-verified/15 text-verified" },
-  corroborated: { label: "Corroborated", cls: "bg-corroborated/15 text-corroborated" },
-  claimed: { label: "Claimed", cls: "bg-claimed/15 text-claimed" },
-  scraped: { label: "Scraped", cls: "bg-scraped/15 text-scraped" },
+  verified: { label: "Verified", cls: "bg-verified/12 text-verified ring-1 ring-verified/20" },
+  corroborated: { label: "Corroborated", cls: "bg-corroborated/12 text-corroborated ring-1 ring-corroborated/20" },
+  claimed: { label: "Claimed", cls: "bg-claimed/12 text-claimed ring-1 ring-claimed/20" },
+  scraped: { label: "Scraped", cls: "bg-scraped/12 text-scraped ring-1 ring-scraped/20" },
 };

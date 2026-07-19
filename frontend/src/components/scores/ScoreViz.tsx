@@ -1,16 +1,16 @@
-import { cn, AXIS_META, CONFIDENCE_META } from "@/lib/utils";
+import { AXIS_META, CONFIDENCE_META, cn } from "@/lib/utils";
 import type { Confidence, Trend } from "@/api/types";
-import { ArrowDownRight, ArrowRight, ArrowUpRight, AlertTriangle } from "lucide-react";
+import { AlertTriangle, ArrowDownRight, ArrowRight, ArrowUpRight } from "lucide-react";
 
 export function TrendArrow({ trend, className }: { trend?: Trend; className?: string }) {
   if (trend === "improving")
-    return <ArrowUpRight className={cn("h-4 w-4 text-success", className)} />;
+    return <ArrowUpRight className={cn("h-4 w-4 text-success", className)} strokeWidth={2.4} />;
   if (trend === "declining")
-    return <ArrowDownRight className={cn("h-4 w-4 text-danger", className)} />;
-  return <ArrowRight className={cn("h-4 w-4 text-faint", className)} />;
+    return <ArrowDownRight className={cn("h-4 w-4 text-danger", className)} strokeWidth={2.4} />;
+  return <ArrowRight className={cn("h-4 w-4 text-faint", className)} strokeWidth={2.4} />;
 }
 
-/** One axis as a labelled 0-100 bar. The three are always shown side by side, never merged. */
+/** One axis as a labelled 0-100 gradient bar. The three are always shown side by side. */
 export function AxisBar({
   axis,
   value,
@@ -23,17 +23,20 @@ export function AxisBar({
   const meta = AXIS_META[axis];
   return (
     <div>
-      <div className="mb-1 flex items-center justify-between text-xs">
-        <span className={cn("font-medium", meta.color)}>{meta.label}</span>
-        <span className="flex items-center gap-1 tabular-nums text-muted">
+      <div className="mb-1.5 flex items-center justify-between text-xs">
+        <span className={cn("font-semibold", meta.color)}>{meta.label}</span>
+        <span className="flex items-center gap-1 font-semibold tabular-nums text-heading">
           {value != null ? value : "—"}
           {value != null && <TrendArrow trend={trend} className="h-3.5 w-3.5" />}
         </span>
       </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-raised">
+      <div className="h-2 overflow-hidden rounded-full bg-raised">
         <div
-          className={cn("h-full rounded-full transition-all", meta.bar)}
-          style={{ width: `${value ?? 0}%` }}
+          className="h-full rounded-full transition-all duration-500"
+          style={{
+            width: `${value ?? 0}%`,
+            background: `linear-gradient(90deg, ${meta.hexLight}, ${meta.hex})`,
+          }}
         />
       </div>
     </div>
@@ -46,7 +49,7 @@ export function TripleAxis({
   axes: Partial<Record<"founder" | "market" | "idea", { value: number; trend: Trend }>>;
 }) {
   return (
-    <div className="grid grid-cols-3 gap-3">
+    <div className="grid grid-cols-3 gap-3.5">
       {(["founder", "market", "idea"] as const).map((a) => (
         <AxisBar key={a} axis={a} value={axes[a]?.value} trend={axes[a]?.trend} />
       ))}
@@ -54,29 +57,42 @@ export function TripleAxis({
   );
 }
 
-/** Circular Trust Score ring with traffic-light color. */
+/** Circular Trust Score ring with a gradient stroke + soft glow. */
 export function TrustRing({ value, size = 56 }: { value: number | null; size?: number }) {
   const v = value ?? 0;
   const r = size / 2 - 5;
   const c = 2 * Math.PI * r;
-  const color = v >= 70 ? "#059669" : v >= 45 ? "#d97706" : "#dc2626";
+  const id = `trust-${size}`;
+  const stops =
+    v >= 70
+      ? ["#34d399", "#10b981"]
+      : v >= 45
+        ? ["#fbbf24", "#f59e0b"]
+        : ["#f87171", "#ef4444"];
   return (
     <div className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e2e8f0" strokeWidth={5} />
+        <defs>
+          <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor={stops[0]} />
+            <stop offset="100%" stopColor={stops[1]} />
+          </linearGradient>
+        </defs>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#eae8f4" strokeWidth={5} />
         <circle
           cx={size / 2}
           cy={size / 2}
           r={r}
           fill="none"
-          stroke={color}
+          stroke={`url(#${id})`}
           strokeWidth={5}
           strokeLinecap="round"
           strokeDasharray={c}
           strokeDashoffset={c - (c * v) / 100}
+          style={{ transition: "stroke-dashoffset 0.6s cubic-bezier(0.16,1,0.3,1)" }}
         />
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center text-sm font-semibold tabular-nums">
+      <div className="absolute inset-0 flex items-center justify-center font-display text-sm font-bold tabular-nums text-heading">
         {value == null ? "—" : Math.round(v)}
       </div>
     </div>
@@ -90,7 +106,7 @@ export function ConfidencePill({ confidence }: { confidence: Confidence }) {
 
 export function ContradictionFlag() {
   return (
-    <span className="pill bg-danger/15 text-danger">
+    <span className="pill bg-danger/12 text-danger ring-1 ring-danger/20">
       <AlertTriangle className="h-3 w-3" /> Contradicted
     </span>
   );
