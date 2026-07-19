@@ -16,8 +16,6 @@ from app.api.router import api_router
 from app.core.config import get_settings
 from app.services import profile_service
 
-settings = get_settings()
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -30,6 +28,13 @@ async def lifespan(app: FastAPI):
 
 
 def create_app() -> FastAPI:
+    # Read settings inside the factory, not at module import time: importing
+    # this module can happen before a host (Railway, etc.) has fully injected
+    # its env vars into the process, and get_settings() is lru_cache'd — a
+    # premature read here would freeze stale defaults (e.g. CORS_ORIGINS
+    # falling back to localhost) for the process's entire lifetime.
+    settings = get_settings()
+
     app = FastAPI(
         title="The VC Brain",
         description="AI deal-flow OS — $100K checks, decision-ready in 24 hours.",
