@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "@/components/layout/AppShell";
+import AnalyticsPage from "@/features/analytics/AnalyticsPage";
 import ApplyPage from "@/features/apply/ApplyPage";
 import DashboardPage from "@/features/dashboard/DashboardPage";
 import FounderPage from "@/features/founder/FounderPage";
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/memos/:id" element={<MemoPage />} />
         <Route path="/trace/:id" element={<TracePage />} />
         <Route path="/sourcing" element={<SourcingPage />} />
+        <Route path="/channels" element={<AnalyticsPage />} />
         <Route path="/apply" element={<ApplyPage />} />
         <Route path="/thesis" element={<ThesisPage />} />
       </Routes>

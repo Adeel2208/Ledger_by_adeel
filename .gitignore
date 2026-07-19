@@ -44,3 +44,6 @@ logs/
 
 # Local tooling (vendored skill) — not part of the product
 .claude/
+
+# TS build cache
+*.tsbuildinfo

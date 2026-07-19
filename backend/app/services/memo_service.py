@@ -37,10 +37,11 @@ _SYSTEM = (
 
 
 class MemoService:
-    def __init__(self, db: Session, llm=None) -> None:
+    def __init__(self, db: Session, llm=None, validate: bool = True) -> None:
         self.db = db
         self.repo = MemoryRepository(db)
         self._llm = llm
+        self.validate = validate  # run the Validator Agent (I2) during generation
 
     @property
     def llm(self):
@@ -86,6 +87,12 @@ class MemoService:
                 memo.id, title, section, valid_ids, contradicted_signal_ids, claim_confidences
             )
 
+        # External validation (Validator Agent, stretch I2) — cross-check claims
+        # against observable + external evidence. Best-effort: never block the memo.
+        refuted = 0
+        if self.validate:
+            refuted = self._persist_validation(application_id, memo.id)
+
         # Explicit gap sections — disclosed, never fabricated (F3).
         for gap in memo_llm.disclosed_gaps:
             self.repo.add_section(memo.id, "Data Gap", gap, is_gap=True)
@@ -97,10 +104,45 @@ class MemoService:
             f"{memo_llm.recommendation.upper()} — {memo_llm.recommendation_rationale}",
         )
 
-        trust = compute_trust_score(claim_confidences, contradictions, len(memo_llm.disclosed_gaps))
+        trust = compute_trust_score(
+            claim_confidences, contradictions, len(memo_llm.disclosed_gaps), refuted_count=refuted
+        )
         self.repo.finalize_memo(memo.id, memo_llm.recommendation, trust)
         self.db.commit()
         return memo.id
+
+    def _persist_validation(self, application_id: int, memo_id: int) -> int:
+        """Run the validator and store findings as a section. Returns #refuted."""
+        from app.intelligence.trust.validator_agent import validate as run_validator
+
+        try:
+            findings = run_validator(application_id, self.db, self._llm)
+        except Exception as exc:  # validation is a stretch enhancement, never fatal
+            logger.warning("Validator agent failed: %s", exc)
+            return 0
+        if not findings:
+            return 0
+
+        _tier = {"refuted": "scraped", "unconfirmed": "claimed", "supported": "corroborated"}
+        section = self.repo.add_section(
+            memo_id,
+            "External Validation (Validator Agent)",
+            "Founder-asserted claims cross-checked against independent and external evidence.",
+        )
+        refuted = 0
+        for f in findings:
+            verdict = f["verdict"]
+            is_refuted = verdict == "refuted"
+            refuted += int(is_refuted)
+            claim = self.repo.add_claim(
+                section.id,
+                f"[{verdict.upper()}] {f['claim']} — {f['reasoning']}",
+                _tier.get(verdict, "claimed"),
+                contradicted=is_refuted,
+            )
+            if f.get("signal_id"):
+                self.repo.add_evidence(claim.id, f["signal_id"], "corroborated", note=verdict)
+        return refuted
 
     # ── internal ──────────────────────────────────────────────────────────────
     def _persist_section(

@@ -37,6 +37,29 @@ export function useThesis() {
   return useQuery({ queryKey: ["thesis"], queryFn: () => apiFetch<Thesis | null>("/thesis") });
 }
 
+export interface ChannelStats {
+  channel: string;
+  count: number;
+  avg_thesis_fit: number | null;
+  avg_founder_score: number | null;
+  pass_rate: number;
+  avg_axes: Record<string, number | null>;
+}
+export interface ChannelAnalytics {
+  by_channel: ChannelStats[];
+  by_source: { source: string; founders: number }[];
+  underexplored: string[];
+  suggestion: string | null;
+}
+
+export function useChannelAnalytics() {
+  return useQuery({
+    queryKey: ["analytics", "channels"],
+    queryFn: () => apiFetch<ChannelAnalytics>("/analytics/channels"),
+    refetchInterval: 20000,
+  });
+}
+
 export function useTrace(applicationId: number) {
   return useQuery({
     queryKey: ["trace", applicationId],

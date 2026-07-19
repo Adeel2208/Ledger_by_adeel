@@ -77,7 +77,7 @@ def _seed(db, confidence=Confidence.VERIFIED):
 
 def test_memo_has_required_sections_and_discloses_gaps(db_session):
     app_id, sigs = _seed(db_session)
-    svc = MemoService(db_session, llm=FakeMemoLLM(evidence_id=sigs[0].id))
+    svc = MemoService(db_session, llm=FakeMemoLLM(evidence_id=sigs[0].id), validate=False)
     memo = svc.get_full(svc.generate(app_id))
 
     titles = {s["title"] for s in memo["sections"]}
@@ -89,7 +89,7 @@ def test_memo_has_required_sections_and_discloses_gaps(db_session):
 
 def test_claim_links_to_evidence_with_source(db_session):
     app_id, sigs = _seed(db_session)
-    svc = MemoService(db_session, llm=FakeMemoLLM(evidence_id=sigs[0].id))
+    svc = MemoService(db_session, llm=FakeMemoLLM(evidence_id=sigs[0].id), validate=False)
     memo = svc.get_full(svc.generate(app_id))
     snapshot = next(s for s in memo["sections"] if s["title"] == "Company Snapshot")
     ev = snapshot["claims"][0]["evidence"][0]
@@ -99,7 +99,7 @@ def test_claim_links_to_evidence_with_source(db_session):
 def test_contradiction_flags_affected_claim(db_session):
     app_id, sigs = _seed(db_session)
     # LLM cites the deck traction signal AND flags it as contradicting the github one.
-    svc = MemoService(db_session, llm=FakeMemoLLM(evidence_id=sigs[1].id,
+    svc = MemoService(db_session, validate=False, llm=FakeMemoLLM(evidence_id=sigs[1].id,
                                                   contra_pair=(sigs[0].id, sigs[1].id)))
     memo = svc.get_full(svc.generate(app_id))
     snapshot = next(s for s in memo["sections"] if s["title"] == "Company Snapshot")

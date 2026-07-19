@@ -8,6 +8,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from app.api.v1 import (
+    analytics,
     applications,
     dashboard,
     founders,
@@ -27,3 +28,4 @@ api_router.include_router(scores.router, prefix="/opportunities", tags=["scores"
 api_router.include_router(memos.router, prefix="/memos", tags=["memos"])
 api_router.include_router(search.router, prefix="/search", tags=["search"])
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
+api_router.include_router(analytics.router, prefix="/analytics", tags=["analytics"])

@@ -29,8 +29,9 @@ Full design: [ARCHITECTURE.md](ARCHITECTURE.md) · scoring & cold-start methods:
 - **Outbound** — scan GitHub/etc. → discovered founders on a watchlist → **Activate** → converge into the *same* screening funnel as inbound.
 - **Multi-axis screening** — **Founder / Market / Idea-vs-Market**, three **independent, never-averaged** scores, each with a trend (↑ / → / ↓).
 - **Evidence-backed memo + Trust Score** — 5 required sections + adversarial view; **every claim traces to a source with a confidence tier**; contradictions flagged (not resolved); missing data disclosed (never fabricated). Trust Score is **per-claim**, not one company number.
-- **Agentic Traceability** (stretch) — a full **reasoning trace**: every step from first signal to decision, each conclusion resolved to the **exact source artifact** that drove it.
-- **Validator agent** (stretch) — cross-checks founder claims against external web data via Tavily.
+- **Agentic Traceability** (stretch I1) — a full **reasoning trace**: every step from first signal to decision, each conclusion resolved to the **exact source artifact** that drove it.
+- **Validator agent** (stretch I2) — during memo generation, cross-checks founder claims against the founder's own independent signals + external web (Tavily); a **refuted** claim is flagged and penalizes the Trust Score.
+- **Sourcing intelligence** (stretch I3) — tracks which channels produce the strongest founders and suggests **underexplored sources** to scan next.
 
 ### Non-negotiables (enforced in code + tests)
 Three axes never averaged · missing data flagged never fabricated · Founder Score never resets · same scoring for inbound & outbound · no portfolio/follow-on/fund-ops/exit features.

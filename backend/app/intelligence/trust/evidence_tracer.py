@@ -34,9 +34,17 @@ def reconcile_claim_confidence(stated: Confidence, evidence_tiers: list[str]) ->
 
 
 def compute_trust_score(
-    claim_confidences: list[str], contradictions: list[Contradiction], gap_count: int
+    claim_confidences: list[str],
+    contradictions: list[Contradiction],
+    gap_count: int,
+    refuted_count: int = 0,
 ) -> float:
-    """0-100 evidence-quality score for the whole memo."""
+    """0-100 evidence-quality score for the whole memo.
+
+    `refuted_count` is the number of claims the Validator Agent (I2) refuted against
+    independent/external evidence — a strong signal the primary agent over-trusted
+    a founder claim, so each carries a heavier penalty than a plain gap.
+    """
     if not claim_confidences:
         base = _NO_EVIDENCE_WEIGHT
     else:
@@ -45,4 +53,5 @@ def compute_trust_score(
         )
     penalty = sum(_SEVERITY_PENALTY.get(c.severity, 0.08) for c in contradictions)
     penalty += min(gap_count * _GAP_PENALTY, 0.15)  # gaps hurt, but honesty is capped-penalty
+    penalty += refuted_count * 0.12                  # a refuted claim is a serious trust hit
     return round(max(0.0, min(1.0, base - penalty)) * 100, 1)

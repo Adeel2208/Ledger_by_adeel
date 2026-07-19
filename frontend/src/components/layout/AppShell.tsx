@@ -1,11 +1,12 @@
 import { cn } from "@/lib/utils";
-import { Brain, LayoutDashboard, Radar, Send, SlidersHorizontal } from "lucide-react";
+import { BarChart3, Brain, LayoutDashboard, Radar, Send, SlidersHorizontal } from "lucide-react";
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 
 const NAV = [
   { to: "/dashboard", label: "Deal Flow", icon: LayoutDashboard },
   { to: "/sourcing", label: "Sourcing", icon: Radar },
+  { to: "/channels", label: "Channels", icon: BarChart3 },
   { to: "/apply", label: "Apply", icon: Send },
   { to: "/thesis", label: "Thesis", icon: SlidersHorizontal },
 ];
