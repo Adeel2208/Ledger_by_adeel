@@ -1,8 +1,10 @@
 import { useFounder } from "@/api/hooks";
-import { TrendArrow, ConfidencePill } from "@/components/scores/ScoreViz";
+import { ProfileHeader } from "@/components/founder/ProfileHeader";
+import { WorkHistory } from "@/components/founder/WorkHistory";
+import { ConfidencePill } from "@/components/scores/ScoreViz";
 import { Card, EmptyState, Pill, SectionLabel, Spinner, StatTile } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, CircleAlert, CircleCheck, Database, ExternalLink, Snowflake, Sparkles } from "lucide-react";
+import { ArrowLeft, CircleAlert, CircleCheck, Database, ExternalLink, Sparkles } from "lucide-react";
 import {
   Line,
   LineChart,
@@ -36,28 +38,16 @@ export default function FounderPage() {
         <ArrowLeft className="h-4 w-4" /> Deal Flow
       </Link>
 
-      <header className="flex items-center gap-3">
-        <h1 className="text-xl font-semibold text-heading">{f.name}</h1>
-        {f.is_cold_start && (
-          <Pill className="bg-market/15 text-market">
-            <Snowflake className="h-3 w-3" /> Cold-start · alternate scoring
-          </Pill>
-        )}
-      </header>
+      <ProfileHeader f={f} />
 
       <div className="grid grid-cols-4 gap-4">
         <StatTile
-          label="Persistent Founder Score"
+          label="Profile completeness"
           icon={Sparkles}
           tone="brand"
           gradient
-          value={
-            <span className="flex items-center gap-2">
-              {f.founder_score ?? "—"}
-              {f.momentum && <TrendArrow trend={f.momentum} />}
-            </span>
-          }
-          sub="follows the founder across ventures — never resets"
+          value={`${f.profile.completeness.pct}%`}
+          sub="founder-supplied, consented data"
         />
         <StatTile label="Signals" value={f.data_quality.signal_count} sub="evidence points ingested" icon={Database} tone="founder" />
         <StatTile label="Covered facets" value={f.data_quality.covered.length} icon={CircleCheck} tone="market" />
@@ -97,18 +87,20 @@ export default function FounderPage() {
               {history.length > 1 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={history}>
-                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#94a3b8" }} stroke="#e2e8f0" />
-                    <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#94a3b8" }} stroke="#e2e8f0" />
+                    {/* Colours track the Tailwind theme tokens (faint/border/
+                        heading/accent) rather than one-off slate hexes. */}
+                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#a3a1b8" }} stroke="#e9e8f4" />
+                    <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#a3a1b8" }} stroke="#e9e8f4" />
                     <Tooltip
                       contentStyle={{
                         background: "#ffffff",
-                        border: "1px solid #e4e7ec",
+                        border: "1px solid #e9e8f4",
                         borderRadius: 8,
                         fontSize: 12,
-                        color: "#1a1d24",
+                        color: "#1e1b4b",
                       }}
                     />
-                    <Line type="monotone" dataKey="value" stroke="#1e40af" strokeWidth={2} dot={{ r: 3 }} />
+                    <Line type="monotone" dataKey="value" stroke="#7c3aed" strokeWidth={2} dot={{ r: 3 }} />
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
@@ -118,7 +110,9 @@ export default function FounderPage() {
           </Card>
         </div>
 
-        {/* Data quality */}
+        {/* Profile + data quality */}
+        <div className="space-y-6">
+        <WorkHistory entries={f.profile.work_history} />
         <Card className="h-fit p-5">
           <SectionLabel>Data quality</SectionLabel>
           <div className="mt-3 space-y-4 text-sm">
@@ -150,6 +144,7 @@ export default function FounderPage() {
             )}
           </div>
         </Card>
+        </div>
       </div>
 
       {/* Signals */}

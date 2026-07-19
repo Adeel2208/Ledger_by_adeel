@@ -18,7 +18,9 @@ from app.intelligence.screening import first_pass
 from app.memory.ingestion.base import IngestBundle
 from app.memory.ingestion.deck_parser import DeckConnector
 from app.memory.repository import MemoryRepository
+from app.services import profile_service
 from app.services.ingestion_service import IngestionService
+from app.services.profile_service import ProfileError
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -33,6 +35,14 @@ async def create_application(
     deck: UploadFile | None = File(None),
     founder_name: str | None = Form(None),   # optional — helps dedup, never required
     founder_email: str | None = Form(None),  # optional
+    # Founder-supplied profile. All optional: a missing field is a disclosed
+    # gap on the profile, never a blocker on the application.
+    founder_photo: UploadFile | None = File(None),
+    founder_headline: str | None = Form(None),
+    founder_bio: str | None = Form(None),
+    founder_role: str | None = Form(None),
+    founder_location: str | None = Form(None),
+    founder_linkedin: str | None = Form(None),
     db: Session = Depends(get_db),
 ) -> dict:
     """Accept deck + company name, ingest, and run the fast first-pass filter."""
@@ -62,6 +72,34 @@ async def create_application(
             warnings.append("Deck could not be parsed automatically — routed to review.")
 
     result = IngestionService(db).ingest_bundle(bundle, channel="inbound")
+
+    # Attach the founder-supplied profile now that entity resolution has told us
+    # which founder this application belongs to. Profile problems degrade to a
+    # warning — a rejected photo must never cost the founder their application.
+    founder = MemoryRepository(db).get_founder(result.founder_id)
+    if founder is not None:
+        profile_fields = {
+            "headline": founder_headline,
+            "bio": founder_bio,
+            "role": founder_role,
+            "location": founder_location,
+            "linkedin_url": founder_linkedin,
+        }
+        supplied = {k: v for k, v in profile_fields.items() if v}
+        if supplied:
+            try:
+                profile_service.update_profile(founder, supplied, db)
+            except ProfileError as exc:
+                warnings.append(f"Profile details not saved: {exc}")
+
+        if founder_photo and founder_photo.filename:
+            try:
+                profile_service.save_photo(
+                    founder, await founder_photo.read(), founder_photo.content_type, db
+                )
+            except ProfileError as exc:
+                warnings.append(f"Photo not saved: {exc}")
+
     screening = first_pass(result.application_id, db)
 
     return {

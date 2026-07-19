@@ -25,7 +25,8 @@ Full design: [ARCHITECTURE.md](ARCHITECTURE.md) · scoring & cold-start methods:
 - **Thesis Engine** — investor sets sectors / stage / geography / check size / ownership / risk; every opportunity is filtered & scored through that lens, applied *identically* to inbound and outbound. *(configurable, never hardcoded)*
 - **Smart data collection** — 6 source connectors (GitHub, arXiv, Product Hunt/HN, deck parser for PDF/PPTX/DOCX, generic web, **Tavily**). Every signal stored with `source · timestamp · confidence · type`. Production **entity resolution** (blocking → Jaro-Winkler → confidence-banded merge/review/new).
 - **Persistent Founder Score** — a "credit score for founders" that lives in Memory, follows the person across ventures, and **never resets**; surfaces momentum, not just a snapshot. Cold-start founders are scored by an **explicit alternate method** (public footprint, technical artifacts) — never defaulted to a low score.
-- **Inbound** — apply with **deck + company name only** → deck parsed to slide-tagged claims → fast first-pass screening (pass / fail / **review**, always with a reason).
+- **Inbound** — apply with **deck + company name only** → deck parsed to slide-tagged claims → fast first-pass screening (pass / fail / **review**, always with a reason). Founders may optionally supply a **profile** (photo, headline, role, location, bio) which renders as a professional dossier on the founder page.
+- **Founder profile** — photos and biography are **founder-supplied and consented**, never scraped (GDPR-safe by construction). Uploads are re-encoded to strip EXIF, square-cropped, and served from `/media`. Founders without a photo — including every outbound-discovered founder — get a deterministic **initials monogram**, and unsupplied fields are **disclosed as gaps**, never fabricated.
 - **Outbound** — scan GitHub/etc. → discovered founders on a watchlist → **Activate** → converge into the *same* screening funnel as inbound.
 - **Multi-axis screening** — **Founder / Market / Idea-vs-Market**, three **independent, never-averaged** scores, each with a trend (↑ / → / ↓).
 - **Evidence-backed memo + Trust Score** — 5 required sections + adversarial view; **every claim traces to a source with a confidence tier**; contradictions flagged (not resolved); missing data disclosed (never fabricated). Trust Score is **per-claim**, not one company number.
@@ -60,6 +61,7 @@ pip install -r requirements.txt
 cp .env.example .env                    # then edit .env: set OPENAI_API_KEY (TAVILY_API_KEY optional)
 
 python scripts/init_db.py               # create tables
+python scripts/migrate_founder_profile.py   # existing DBs only: add profile columns (idempotent)
 python scripts/seed_data.py             # load demo dataset (offline, no API calls)
 
 uvicorn app.main:app --reload           # → http://localhost:8000/docs

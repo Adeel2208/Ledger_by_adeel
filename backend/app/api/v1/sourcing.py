@@ -40,9 +40,40 @@ def sources() -> list[str]:
 
 
 @router.get("/discovered")
-def discovered(db: Session = Depends(get_db)) -> list[dict]:
-    """Outbound watchlist: founders in Memory with no application yet (D1)."""
-    return discovered_founders(db)
+def discovered(
+    db: Session = Depends(get_db),
+    include_intelligence: bool = True
+) -> list[dict]:
+    """
+    Outbound watchlist: founders in Memory with no application yet (D1).
+    
+    Args:
+        include_intelligence: If True, includes quality scores and activation recommendations
+    
+    Returns:
+        List of discovered founders with intelligence scoring
+    """
+    return discovered_founders(db, include_intelligence=include_intelligence)
+
+
+@router.get("/channel-analytics")
+def get_channel_analytics(
+    db: Session = Depends(get_db),
+    lookback_days: int = 180
+) -> dict:
+    """
+    Analyze sourcing channel performance.
+    
+    Returns:
+    - Total discovered founders
+    - Activation rate
+    - Screening pass rate
+    - Average signal quality
+    - Recommendations for improvement
+    """
+    from app.services.sourcing_service import channel_performance_analytics
+    
+    return channel_performance_analytics(db, lookback_days=lookback_days)
 
 
 @router.post("/scan")

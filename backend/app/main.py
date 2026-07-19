@@ -5,13 +5,16 @@ scheduler. Keep this thin — orchestration belongs in `app/services`, not here.
 """
 from __future__ import annotations
 
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.api.router import api_router
 from app.core.config import get_settings
+from app.services import profile_service
 
 settings = get_settings()
 
@@ -43,6 +46,11 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(api_router, prefix="/api/v1")
+
+    # Serve founder-supplied media (photos). Created eagerly so the mount does
+    # not fail on a fresh checkout where nothing has been uploaded yet.
+    os.makedirs(profile_service.UPLOAD_DIR, exist_ok=True)
+    app.mount("/media", StaticFiles(directory=profile_service.UPLOAD_DIR), name="media")
 
     @app.get("/health", tags=["meta"])
     def health() -> dict[str, str]:

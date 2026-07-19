@@ -1,7 +1,7 @@
 import { useApply } from "@/api/hooks";
 import { Card, Pill, SectionLabel, Spinner } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, FileUp, Send, XCircle, CircleDot } from "lucide-react";
+import { CheckCircle2, FileUp, Image as ImageIcon, Send, XCircle, CircleDot } from "lucide-react";
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -19,6 +19,24 @@ export default function ApplyPage() {
   const [founderName, setFounderName] = useState("");
   const [founderEmail, setFounderEmail] = useState("");
 
+  // Optional founder profile. Kept behind a disclosure so the headline promise
+  // — deck + company name — stays true.
+  const photoRef = useRef<HTMLInputElement>(null);
+  const [showProfile, setShowProfile] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [profile, setProfile] = useState({
+    headline: "",
+    role: "",
+    location: "",
+    linkedin: "",
+    bio: "",
+  });
+
+  const onPhotoPick = () => {
+    const file = photoRef.current?.files?.[0];
+    setPhotoPreview(file ? URL.createObjectURL(file) : null);
+  };
+
   const submit = () => {
     const form = new FormData();
     form.set("company_name", companyName);
@@ -26,6 +44,15 @@ export default function ApplyPage() {
     if (file) form.set("deck", file);
     if (founderName) form.set("founder_name", founderName);
     if (founderEmail) form.set("founder_email", founderEmail);
+
+    const photo = photoRef.current?.files?.[0];
+    if (photo) form.set("founder_photo", photo);
+    if (profile.headline) form.set("founder_headline", profile.headline);
+    if (profile.role) form.set("founder_role", profile.role);
+    if (profile.location) form.set("founder_location", profile.location);
+    if (profile.linkedin) form.set("founder_linkedin", profile.linkedin);
+    if (profile.bio) form.set("founder_bio", profile.bio);
+
     apply.mutate(form);
   };
 
@@ -107,6 +134,50 @@ export default function ApplyPage() {
                      value={founderName} onChange={(e) => setFounderName(e.target.value)} />
               <input className="input" placeholder="Email"
                      value={founderEmail} onChange={(e) => setFounderEmail(e.target.value)} />
+            </div>
+          </details>
+
+          <details className="text-sm" open={showProfile}
+                   onToggle={(e) => setShowProfile((e.target as HTMLDetailsElement).open)}>
+            <summary className="cursor-pointer text-xs text-faint">
+              Optional: your profile — photo, role & background
+            </summary>
+            <div className="mt-3 space-y-3">
+              <div className="flex items-center gap-3">
+                {photoPreview ? (
+                  <img src={photoPreview} alt="" className="h-14 w-14 rounded-full object-cover ring-1 ring-border" />
+                ) : (
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-raised">
+                    <ImageIcon className="h-5 w-5 text-faint" />
+                  </div>
+                )}
+                <div>
+                  <button type="button" className="btn-ghost text-xs" onClick={() => photoRef.current?.click()}>
+                    {photoPreview ? "Change photo" : "Add a photo"}
+                  </button>
+                  <p className="mt-1 text-[11px] text-faint">JPEG, PNG or WebP · up to 5MB</p>
+                </div>
+                <input ref={photoRef} type="file" accept="image/jpeg,image/png,image/webp"
+                       className="hidden" onChange={onPhotoPick} />
+              </div>
+
+              <input className="input w-full" placeholder="Headline — e.g. Founder & CTO, Acme"
+                     value={profile.headline}
+                     onChange={(e) => setProfile({ ...profile, headline: e.target.value })} />
+              <div className="grid grid-cols-2 gap-3">
+                <input className="input" placeholder="Role"
+                       value={profile.role}
+                       onChange={(e) => setProfile({ ...profile, role: e.target.value })} />
+                <input className="input" placeholder="Location"
+                       value={profile.location}
+                       onChange={(e) => setProfile({ ...profile, location: e.target.value })} />
+              </div>
+              <input className="input w-full" placeholder="LinkedIn URL"
+                     value={profile.linkedin}
+                     onChange={(e) => setProfile({ ...profile, linkedin: e.target.value })} />
+              <textarea className="input w-full" rows={3} placeholder="Short bio"
+                        value={profile.bio}
+                        onChange={(e) => setProfile({ ...profile, bio: e.target.value })} />
             </div>
           </details>
 

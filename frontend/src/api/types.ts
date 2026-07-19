@@ -50,9 +50,35 @@ export interface ScorePoint {
   computed_at: string;
 }
 
+export interface WorkHistoryEntry {
+  company: string | null;
+  title: string | null;
+  start: string | null;
+  end: string | null;
+  summary: string | null;
+}
+
+/** Founder-supplied profile. Every field is optional: absence is a disclosed
+ *  gap, and `monogram` always provides a designed avatar fallback. */
+export interface FounderProfile {
+  photo_url: string | null;
+  monogram: { initials: string; color: string };
+  headline: string | null;
+  bio: string | null;
+  role: string | null;
+  location: string | null;
+  personal_url: string | null;
+  twitter_handle: string | null;
+  linkedin_url: string | null;
+  work_history: WorkHistoryEntry[];
+  profile_updated_at: string | null;
+  completeness: { present: string[]; missing: string[]; pct: number };
+}
+
 export interface FounderDetail {
   id: number;
   name: string;
+  profile: FounderProfile;
   email: string | null;
   github_handle: string | null;
   linkedin_url: string | null;
