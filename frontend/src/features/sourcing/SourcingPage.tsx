@@ -1,7 +1,7 @@
 import { useActivate, useDiscovered, useScan, type Discovered } from "@/api/hooks";
 import { TrendArrow } from "@/components/scores/ScoreViz";
 import { Card, EmptyState, Pill, SectionLabel, Spinner } from "@/components/ui/primitives";
-import { Github, Radar, Rocket } from "lucide-react";
+import { Copy, Github, Radar, Rocket } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -121,15 +121,55 @@ function DiscoveredRow({ d }: { d: Discovered }) {
             className="btn-primary text-xs"
             disabled={!companyName || activate.isPending}
             onClick={() =>
-              activate.mutate(
-                { founderId: d.founder_id, company_name: companyName, sector: sector || undefined },
-                { onSuccess: () => navigate("/dashboard") },
-              )
+              // Stay on the page: the response carries the outreach draft, and
+              // navigating away immediately would mean nobody ever sees it.
+              activate.mutate({
+                founderId: d.founder_id,
+                company_name: companyName,
+                sector: sector || undefined,
+              })
             }
           >
             {activate.isPending ? <Spinner className="h-3.5 w-3.5" /> : null}
             Invite to apply → funnel
           </button>
+        </div>
+      )}
+
+      {activate.isSuccess && (
+        <div className="mt-4 space-y-3 border-t border-border pt-4">
+          <div className="flex items-center justify-between">
+            <SectionLabel>Cold outreach · drafted from their observed signals</SectionLabel>
+            <Pill className="bg-market/12 text-market">
+              screened: {activate.data.screening.decision}
+            </Pill>
+          </div>
+
+          {activate.data.outreach_draft ? (
+            <>
+              <p className="whitespace-pre-line rounded-lg bg-raised p-3 text-sm leading-relaxed text-ink">
+                {activate.data.outreach_draft}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  className="btn-ghost text-xs"
+                  onClick={() => navigator.clipboard.writeText(activate.data.outreach_draft ?? "")}
+                >
+                  <Copy className="h-3.5 w-3.5" /> Copy message
+                </button>
+                <button className="btn-primary text-xs" onClick={() => navigate("/dashboard")}>
+                  View in Deal Flow
+                </button>
+              </div>
+            </>
+          ) : (
+            <p className="text-xs text-muted">
+              No draft generated — not enough signals to ground a personal message.
+              <button className="ml-2 text-accent hover:underline" onClick={() => navigate("/dashboard")}>
+                View in Deal Flow
+              </button>
+            </p>
+          )}
         </div>
       )}
     </Card>

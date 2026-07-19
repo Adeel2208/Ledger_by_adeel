@@ -81,6 +81,18 @@ class Monogram:
     color: str
 
 
+def avatar_block(founder: Founder) -> dict:
+    """The compact avatar payload every list-style endpoint shares:
+    photo URL when the founder supplied one, deterministic monogram always."""
+    mono = monogram(founder)
+    return {
+        "photo_url": (
+            "/media/" + founder.photo_path.replace("\\", "/") if founder.photo_path else None
+        ),
+        "monogram": {"initials": mono.initials, "color": mono.color},
+    }
+
+
 def monogram(founder: Founder) -> Monogram:
     """Initials + a stable colour derived from the founder's identity.
 

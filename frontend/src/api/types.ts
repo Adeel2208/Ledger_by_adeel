@@ -34,11 +34,19 @@ export interface Opportunity {
   memo_id: number | null;
   recommendation: string | null;
   trust_score: number | null;
+  /** Hours from first ingested signal to the memo decision; null if undecided. */
+  decision_hours: number | null;
 }
 
 export interface DashboardResponse {
   opportunities: Opportunity[];
   count: number;
+  /** Fund-level speed instrumentation: first signal → decision. */
+  velocity: {
+    decided_count: number;
+    median_hours_to_decision: number | null;
+    within_24h_rate: number | null;
+  };
 }
 
 export interface Signal {
@@ -282,4 +290,43 @@ export interface FounderIntelligence {
   risk: RiskAssessment;
   timing: OptimalTiming;
   anomalies: AnomalyReport;
+}
+
+// ── Natural-language multi-attribute search (FR-3) ────────────────────────────
+
+/** How the parser read the query — shown to the user so the interpretation is
+ *  inspectable, not a black box. Mirrors StructuredQuery on the backend. */
+export interface ParsedQuery {
+  entities: {
+    sectors: string[];
+    locations: string[];
+    technologies: string[];
+    accelerators: string[];
+    companies: string[];
+    investors: string[];
+  };
+  attributes: Record<string, boolean | null>;
+  ranges: Record<string, number | null>;
+  temporal: { period: string | null; founded_after: string | null; founded_before: string | null };
+  semantic_query: string;
+  negations: string[];
+  confidence: number;
+}
+
+export interface SearchResult {
+  founder_id: number;
+  founder_name: string;
+  company_id: number | null;
+  company_name: string | null;
+  relevance_score: number;
+  match_reasons: string[];
+  highlights: Record<string, string>;
+  avatar?: AvatarBlock;
+}
+
+export interface SearchResponse {
+  query: string;
+  parsed: ParsedQuery;
+  results: SearchResult[];
+  total: number;
 }

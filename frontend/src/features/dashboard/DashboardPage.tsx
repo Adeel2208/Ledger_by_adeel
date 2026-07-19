@@ -12,11 +12,11 @@ import {
   GitBranch,
   Layers,
   Search,
-  ShieldCheck,
   Snowflake,
   Sparkles,
   Target,
   TrendingUp,
+  Zap,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -135,7 +135,23 @@ export default function DashboardPage() {
         <KpiTile label="Avg Founder" value={m.avgFounder?.toFixed(0) ?? "—"} icon={TrendingUp} tone="founder" />
         <KpiTile label="Avg Thesis Fit" value={m.avgFit?.toFixed(0) ?? "—"} icon={Target} tone="cyan" />
         <KpiTile label="Pass Rate" value={`${m.passRate}%`} icon={Gauge} tone="market" />
-        <KpiTile label="Avg Trust" value={m.avgTrust?.toFixed(0) ?? "—"} icon={ShieldCheck} tone="idea" />
+        {/* The brief's yardstick: first signal → decision, in hours. Trust is
+            already visible per-row as rings, so velocity earns this slot. */}
+        <KpiTile
+          label="Signal → Decision"
+          value={
+            data?.velocity.median_hours_to_decision != null
+              ? `${data.velocity.median_hours_to_decision}h`
+              : "—"
+          }
+          delta={
+            data?.velocity.within_24h_rate != null
+              ? `${Math.round(data.velocity.within_24h_rate * 100)}% < 24h`
+              : undefined
+          }
+          icon={Zap}
+          tone="idea"
+        />
         <KpiTile label="Cold-start" value={m.coldStart} icon={Snowflake} tone="cyan" />
       </div>
 

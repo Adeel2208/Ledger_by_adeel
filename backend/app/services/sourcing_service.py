@@ -168,6 +168,11 @@ def activate_founder(founder_id: int, company: dict, db: Session) -> dict:
     except Exception:
         intelligence_report = None
     
+    # Draft the cold-outreach message that would accompany this activation —
+    # grounded in the founder's observed signals ("we noticed your work"),
+    # never blocking: a failed draft returns None.
+    from app.services.outreach_service import draft_outreach
+
     return {
         "application_id": application.id,
         "founder_id": founder_id,
@@ -180,6 +185,7 @@ def activate_founder(founder_id: int, company: dict, db: Session) -> dict:
             "thesis_fit": screening.thesis_fit,
         },
         "intelligence": intelligence_report,
+        "outreach_draft": draft_outreach(founder_id, db),
     }
 
 

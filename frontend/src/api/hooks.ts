@@ -9,6 +9,7 @@ import type {
   Opportunity,
   OptimalTiming,
   RiskAssessment,
+  SearchResponse,
   SignalAnalysis,
   SuccessProbability,
   Thesis,
@@ -115,12 +116,14 @@ export function useUpdateThesis() {
   });
 }
 
+/** Multi-attribute NL search (FR-3). The response carries the parser's reading
+ *  of the query so the UI can show *how* the system understood it. */
 export function useSearch() {
   return useMutation({
     mutationFn: (query: string) =>
-      apiFetch<{ id: string; score: number; metadata: Record<string, unknown> }[]>("/search", {
+      apiFetch<SearchResponse>("/search", {
         method: "POST",
-        body: JSON.stringify({ query, k: 10 }),
+        body: JSON.stringify({ query, k: 25 }),
       }),
   });
 }
@@ -175,10 +178,13 @@ export function useActivate() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ founderId, ...body }: { founderId: number; company_name: string; sector?: string; stage?: string; geography?: string }) =>
-      apiFetch<{ application_id: number; screening: { decision: string; reason: string } }>(
-        `/sourcing/${founderId}/activate`,
-        { method: "POST", body: JSON.stringify(body) },
-      ),
+      apiFetch<{
+        application_id: number;
+        screening: { decision: string; reason: string };
+        /** LLM-drafted cold-outreach message grounded in observed signals;
+         *  null when the founder has no signals to ground it in. */
+        outreach_draft: string | null;
+      }>(`/sourcing/${founderId}/activate`, { method: "POST", body: JSON.stringify(body) }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["discovered"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });

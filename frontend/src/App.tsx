@@ -7,6 +7,7 @@ import FounderPage from "@/features/founder/FounderPage";
 import IntelligencePage from "@/features/intelligence/IntelligencePage";
 import PatternsPage from "@/features/intelligence/PatternsPage";
 import MemoPage from "@/features/memo/MemoPage";
+import SearchPage from "@/features/search/SearchPage";
 import SourcingPage from "@/features/sourcing/SourcingPage";
 import ThesisPage from "@/features/thesis/ThesisPage";
 import TracePage from "@/features/trace/TracePage";
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/founders/:id" element={<FounderPage />} />
         <Route path="/founders/:id/intelligence" element={<IntelligencePage />} />
         <Route path="/patterns" element={<PatternsPage />} />
+        <Route path="/search" element={<SearchPage />} />
         <Route path="/memos/:id" element={<MemoPage />} />
         <Route path="/trace/:id" element={<TracePage />} />
         <Route path="/sourcing" element={<SourcingPage />} />

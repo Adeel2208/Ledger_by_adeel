@@ -12,8 +12,25 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.intelligence.reasoning import resolve_query
 from app.intelligence.retrieval import get_index
+from app.memory.repository import MemoryRepository
+from app.services import profile_service
 
 router = APIRouter()
+
+
+def _attach_avatars(payload: dict, db: Session) -> dict:
+    """Decorate each result row with the founder's avatar block.
+
+    Done here rather than inside `resolve_query` so the reasoning layer stays
+    presentation-free — the same search core can serve callers that don't
+    render faces.
+    """
+    repo = MemoryRepository(db)
+    for row in payload.get("results", []):
+        founder = repo.get_founder(row["founder_id"])
+        if founder is not None:
+            row["avatar"] = profile_service.avatar_block(founder)
+    return payload
 
 
 class SearchRequest(BaseModel):
@@ -39,7 +56,7 @@ def advanced_search(req: SearchRequest, db: Session = Depends(get_db)) -> dict:
     
     Returns structured results with relevance scoring and match explanations.
     """
-    return resolve_query(req.query, db, k=req.k)
+    return _attach_avatars(resolve_query(req.query, db, k=req.k), db)
 
 
 @router.post("/simple")
