@@ -65,6 +65,20 @@ def sample_founder(db_session: Session):
             timestamp=now - timedelta(days=30),
             confidence=Confidence.VERIFIED
         ),
+        # Three star observations: detect_momentum requires >=3 datapoints to
+        # call a trend (two points always form a perfect line), so a fixture
+        # meant to exercise GitHub momentum must seed at least three.
+        RawSignal(
+            source="github",
+            record_type="github_profile",
+            payload={
+                "total_stars": 600,
+                "followers": 120,
+                "public_repos": 11
+            },
+            timestamp=now - timedelta(days=15),
+            confidence=Confidence.VERIFIED
+        ),
         RawSignal(
             source="github",
             record_type="github_profile",

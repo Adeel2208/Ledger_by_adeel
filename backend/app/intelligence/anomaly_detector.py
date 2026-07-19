@@ -384,7 +384,10 @@ class AnomalyDetector:
             temporal_anomalies=[],
             network_anomalies=[],
             overall_risk_level="unknown",
-            recommended_action="investigate",
+            # Nothing has been examined yet, so there is nothing to investigate.
+            # The honest instruction is to gather data, not to treat an empty
+            # report as suspicious.
+            recommended_action="gather_data",
             anomaly_count=0,
             generated_at=datetime.now(timezone.utc),
         )

@@ -1,5 +1,5 @@
 import { mediaUrl } from "@/api/client";
-import type { FounderProfile } from "@/api/types";
+import type { AvatarBlock } from "@/api/types";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
@@ -26,7 +26,8 @@ export function Avatar({
   size = "md",
   className,
 }: {
-  profile: FounderProfile;
+  /** Full FounderProfile works too — only photo_url + monogram are read. */
+  profile: AvatarBlock;
   name: string;
   size?: keyof typeof SIZES;
   className?: string;

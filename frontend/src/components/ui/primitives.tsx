@@ -28,9 +28,24 @@ export function SectionLabel({ children }: { children: ReactNode }) {
   );
 }
 
-export function EmptyState({ title, hint }: { title: string; hint?: string }) {
+export function EmptyState({
+  title,
+  hint,
+  compact,
+}: {
+  title: string;
+  hint?: string;
+  /** Tighter padding for empty states inside a small card, where the default
+   *  full-page spacing would leave a large void. */
+  compact?: boolean;
+}) {
   return (
-    <div className="flex flex-col items-center justify-center gap-1.5 py-20 text-center">
+    <div
+      className={cn(
+        "flex flex-col items-center justify-center gap-1.5 text-center",
+        compact ? "py-8" : "py-20",
+      )}
+    >
       <div className="text-sm font-semibold text-muted">{title}</div>
       {hint && <div className="text-xs text-faint">{hint}</div>}
     </div>

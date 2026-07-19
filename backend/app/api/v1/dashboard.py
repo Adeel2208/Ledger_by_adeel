@@ -13,8 +13,19 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.intelligence.thesis_engine import score_thesis_fit
 from app.memory.repository import MemoryRepository
+from app.services import profile_service
 
 router = APIRouter()
+
+
+def _avatar_block(founder) -> dict:
+    mono = profile_service.monogram(founder)
+    return {
+        "photo_url": (
+            "/media/" + founder.photo_path.replace("\\", "/") if founder.photo_path else None
+        ),
+        "monogram": {"initials": mono.initials, "color": mono.color},
+    }
 
 
 @router.get("")
@@ -35,6 +46,10 @@ def get_dashboard(db: Session = Depends(get_db)) -> dict:
                 "application_id": app.id,
                 "founder_id": founder.id,
                 "founder_name": founder.name,
+                # Compact avatar block — photo if supplied, else the same
+                # deterministic monogram the profile page uses. Deliberately
+                # not the full profile: a ranked table doesn't need bios.
+                "avatar": _avatar_block(founder),
                 "company_name": company.name,
                 "sector": company.sector,
                 "stage": company.stage,

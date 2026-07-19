@@ -33,9 +33,11 @@ Full design: [ARCHITECTURE.md](ARCHITECTURE.md) · scoring & cold-start methods:
 - **Agentic Traceability** (stretch I1) — a full **reasoning trace**: every step from first signal to decision, each conclusion resolved to the **exact source artifact** that drove it.
 - **Validator agent** (stretch I2) — during memo generation, cross-checks founder claims against the founder's own independent signals + external web (Tavily); a **refuted** claim is flagged and penalizes the Trust Score.
 - **Sourcing intelligence** (stretch I3) — tracks which channels produce the strongest founders and suggests **underexplored sources** to scan next.
+- **Intelligence workbench** (`/founders/:id/intelligence`) — signal correlation, milestone **probability**, a five-dimension **risk profile**, momentum, anomaly detection and a **timing verdict** (invest now / wait N months / pass), each rendered from the predictive engines with its own confidence.
+- **Patterns** (`/patterns`) — success patterns and failure modes **mined from past decisions**, so the fund's own track record — not intuition — says what predicts outcomes.
 
 ### Non-negotiables (enforced in code + tests)
-Three axes never averaged · missing data flagged never fabricated · Founder Score never resets · same scoring for inbound & outbound · no portfolio/follow-on/fund-ops/exit features.
+Three axes never averaged · missing data flagged never fabricated · Founder Score never resets · same scoring for inbound & outbound · no portfolio/follow-on/fund-ops/exit features · **absence of evidence is never evidence of badness** — a founder with no signals reads as *undetermined* (`risk_level: "unknown"`, `insufficient_data`, no red flags), never as risky or failing (`tests/unit/test_cold_start_neutrality.py`).
 
 ---
 

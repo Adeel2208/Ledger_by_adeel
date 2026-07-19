@@ -8,10 +8,17 @@ export interface AxisMini {
   trend: Trend;
 }
 
+/** Compact avatar payload — the subset of the profile a table row needs. */
+export interface AvatarBlock {
+  photo_url: string | null;
+  monogram: { initials: string; color: string };
+}
+
 export interface Opportunity {
   application_id: number;
   founder_id: number;
   founder_name: string;
+  avatar: AvatarBlock;
   company_name: string;
   sector: string | null;
   stage: string | null;
@@ -175,4 +182,104 @@ export interface Thesis {
   check_size_max: number | null;
   ownership_target: number | null;
   risk_appetite: string;
+}
+
+// ── Intelligence layer (signal correlation, prediction, risk, anomalies) ──────
+
+export interface MomentumIndicator {
+  dimension: string;
+  direction: string;
+  velocity: number;
+  timespan_days: number;
+  confidence: number;
+}
+
+export interface QualitySignal {
+  indicator: string;
+  score: number;
+  evidence: string;
+  weight: number;
+}
+
+export interface SignalContradiction {
+  metric: string;
+  severity: string;
+  explanation: string;
+  sources: string[];
+  values: unknown[];
+}
+
+export interface SignalAnalysis {
+  founder_id: number;
+  consistency_score: number;
+  confidence: number;
+  analyzed_signal_count: number;
+  contradictions: SignalContradiction[];
+  momentum_indicators: MomentumIndicator[];
+  quality_signals: QualitySignal[];
+  network_effects: { effect_type: string; strength: number; evidence: string }[];
+  red_flags: string[];
+  green_flags: string[];
+  generated_at: string;
+}
+
+export interface SuccessProbability {
+  founder_id: number;
+  confidence: number;
+  probabilities: {
+    product_market_fit: number;
+    series_a_funding: number;
+    profitability: number;
+    exit_potential: number;
+  };
+  key_drivers: string[];
+  risk_factors: string[];
+  timing_estimates: { months_to_pmf: number | null; months_to_funding: number | null };
+}
+
+/** `risk_level` is "unknown" when there are no signals — an undetermined state,
+ *  explicitly not a low or high risk finding. */
+export interface RiskAssessment {
+  founder_id: number;
+  overall_risk: number;
+  risk_level: "low" | "medium" | "high" | "critical" | "unknown";
+  risk_dimensions: {
+    execution: number;
+    market_timing: number;
+    team: number;
+    competitive: number;
+    financial: number;
+  };
+  risk_factors: { category: string; severity: string; description: string }[];
+  mitigation_suggestions: string[];
+}
+
+/** `recommendation` is "insufficient_data" when evidence is too thin to time. */
+export interface OptimalTiming {
+  founder_id: number;
+  recommendation: string;
+  reasoning: string[];
+  wait_months: number | null;
+  expected_milestones: string[];
+  window_closing_in_months: number | null;
+  urgency_score: number;
+}
+
+export interface AnomalyReport {
+  founder_id: number;
+  overall_risk_level: string;
+  recommended_action: string;
+  anomaly_count: number;
+  statistical_anomalies: { description?: string; metric?: string; severity?: string }[];
+  behavioral_anomalies: { description?: string; metric?: string; severity?: string }[];
+  temporal_anomalies: { description?: string; metric?: string; severity?: string }[];
+}
+
+/** Everything the Intelligence page needs, fetched in parallel. */
+export interface FounderIntelligence {
+  analysis: SignalAnalysis;
+  success: SuccessProbability;
+  risk: RiskAssessment;
+  timing: OptimalTiming;
+  anomalies: AnomalyReport;
 }

@@ -824,7 +824,11 @@ class SignalCorrelationEngine:
             quality_signals=[],
             network_effects=[],
             confidence=0.0,
-            red_flags=["⚠️ No signals available for analysis"],
+            # Having no signals is a coverage gap, not a red flag about the
+            # founder — flagging it red would penalise every cold-start founder
+            # for lacking a traditional paper trail. `analyzed_signal_count=0`
+            # already tells the caller the report is empty.
+            red_flags=[],
             green_flags=[],
             analyzed_signal_count=0,
             generated_at=datetime.now(timezone.utc),

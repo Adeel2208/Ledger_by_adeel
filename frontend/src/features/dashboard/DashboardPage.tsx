@@ -1,5 +1,6 @@
 import { useDashboard, useGenerateMemo, useScoreOpportunity } from "@/api/hooks";
 import type { Opportunity } from "@/api/types";
+import { Avatar } from "@/components/founder/Avatar";
 import { TrendArrow, TrustRing } from "@/components/scores/ScoreViz";
 import { Card, EmptyState, Pill, SectionLabel, Spinner } from "@/components/ui/primitives";
 import { cn, scoreColor } from "@/lib/utils";
@@ -263,16 +264,19 @@ function DealRow({ o }: { o: Opportunity }) {
     <tr className="border-b border-border/60 transition-colors last:border-0 hover:bg-brand-soft/40">
       {/* Opportunity */}
       <td className="px-3 py-3">
-        <button className="text-left" onClick={() => navigate(`/founders/${o.founder_id}`)}>
-          <div className="flex items-center gap-2">
-            <span className="font-display font-semibold text-heading hover:text-accent">{o.company_name}</span>
-            {o.is_cold_start && (
-              <Pill className="bg-market/12 text-market ring-1 ring-market/20">
-                <Snowflake className="h-2.5 w-2.5" /> Cold
-              </Pill>
-            )}
-          </div>
-          <div className="mt-0.5 text-xs text-muted">{o.founder_name}</div>
+        <button className="flex items-center gap-2.5 text-left" onClick={() => navigate(`/founders/${o.founder_id}`)}>
+          <Avatar profile={o.avatar} name={o.founder_name} size="sm" />
+          <span>
+            <span className="flex items-center gap-2">
+              <span className="font-display font-semibold text-heading hover:text-accent">{o.company_name}</span>
+              {o.is_cold_start && (
+                <Pill className="bg-market/12 text-market ring-1 ring-market/20">
+                  <Snowflake className="h-2.5 w-2.5" /> Cold
+                </Pill>
+              )}
+            </span>
+            <span className="mt-0.5 block text-xs text-muted">{o.founder_name}</span>
+          </span>
         </button>
       </td>
       {/* Sector/Stage/Geo */}

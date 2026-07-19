@@ -261,8 +261,24 @@ class PredictiveEngine:
         success_prob = self.calculate_success_probability(founder_id)
         risk = self.assess_risk(founder_id)
         
-        # Decision logic
-        if success_prob.product_market_fit_prob > 0.7 and risk.overall_risk < 0.4:
+        # Decision logic.
+        # Insufficient evidence is checked FIRST and on its own: with no signals
+        # the probabilities are 0.0 and risk is "unknown" (0.0), which would
+        # otherwise fall through to "pass" (penalising a founder for having no
+        # paper trail) or, once risk reads 0.0, to "invest_now" on zero
+        # evidence. Neither is a real finding — say so explicitly instead.
+        if risk.risk_level == "unknown" or success_prob.confidence == 0.0:
+            recommendation = "insufficient_data"
+            reasoning = [
+                "Not enough signals to time this investment.",
+                "This is a data gap, not a negative signal about the founder.",
+                "Ingest a deck, GitHub, or web signals to enable a recommendation.",
+            ]
+            wait_months = None
+            urgency = 0.0
+            window_closing = None
+
+        elif success_prob.product_market_fit_prob > 0.7 and risk.overall_risk < 0.4:
             recommendation = "invest_now"
             reasoning = [
                 f"High PMF probability ({success_prob.product_market_fit_prob:.0%})",
@@ -845,20 +861,25 @@ class PredictiveEngine:
     
     def _empty_risk_assessment(self, founder_id: int) -> RiskAssessment:
         """Empty risk assessment when no data."""
+        # Absence of evidence is NOT evidence of risk. Returning 1.0 here would
+        # brand every cold-start founder "critical" and violate the guarantee
+        # that a founder is never defaulted to a bad score for lacking a
+        # traditional paper trail. `risk_level="unknown"` forces the caller (and
+        # the UI) to treat this as undetermined rather than as a finding.
         return RiskAssessment(
             founder_id=founder_id,
-            execution_risk=1.0,
-            market_timing_risk=1.0,
-            team_risk=1.0,
-            competitive_risk=1.0,
-            financial_risk=1.0,
-            overall_risk=1.0,
-            risk_level="critical",
+            execution_risk=0.0,
+            market_timing_risk=0.0,
+            team_risk=0.0,
+            competitive_risk=0.0,
+            financial_risk=0.0,
+            overall_risk=0.0,
+            risk_level="unknown",
             risk_factors=[{
                 "category": "data",
-                "severity": "critical",
-                "description": "No data available for assessment"
+                "severity": "info",
+                "description": "No signals ingested yet — risk is undetermined, not low and not high."
             }],
-            mitigation_suggestions=["Gather more data before proceeding"],
+            mitigation_suggestions=["Ingest signals (deck, GitHub, web) to enable risk assessment."],
             generated_at=datetime.now(timezone.utc),
         )

@@ -1,10 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "./client";
 import type {
+  AnomalyReport,
   DashboardResponse,
   FounderDetail,
+  FounderIntelligence,
   Memo,
   Opportunity,
+  OptimalTiming,
+  RiskAssessment,
+  SignalAnalysis,
+  SuccessProbability,
   Thesis,
   Trace,
 } from "./types";
@@ -181,3 +187,52 @@ export function useActivate() {
 }
 
 export type { Opportunity };
+
+// ── Intelligence (C4) ─────────────────────────────────────────────────────────
+
+/**
+ * Full intelligence package for one founder.
+ *
+ * The backend exposes each analysis as its own endpoint and a
+ * `/complete-intelligence` roll-up, but that roll-up drops the risk dimensions
+ * and momentum detail these views chart — so fetch the five in parallel
+ * instead. One React Query key still gives the page a single loading state.
+ */
+export function useFounderIntelligence(founderId: number) {
+  return useQuery({
+    queryKey: ["intelligence", founderId],
+    enabled: Number.isFinite(founderId),
+    // Each call re-runs the engines server-side; don't refetch on every focus.
+    staleTime: 60_000,
+    queryFn: async (): Promise<FounderIntelligence> => {
+      const body = JSON.stringify({ founder_id: founderId });
+      const post = <T,>(p: string) => apiFetch<T>(p, { method: "POST", body });
+      const [analysis, success, risk, timing, anomalies] = await Promise.all([
+        post<SignalAnalysis>("/intelligence/analyze"),
+        post<SuccessProbability>("/intelligence/success-probability"),
+        post<RiskAssessment>("/intelligence/risk-assessment"),
+        post<OptimalTiming>("/intelligence/optimal-timing"),
+        post<AnomalyReport>("/intelligence/anomaly-detection"),
+      ]);
+      return { analysis, success, risk, timing, anomalies };
+    },
+  });
+}
+
+export interface PatternReport {
+  analyzed_applications: number;
+  success_patterns: { pattern: string; confidence: number; frequency: number; indicators: string[] }[];
+  failure_modes: { mode: string; frequency: number; indicators: string[] }[];
+}
+
+export function usePatterns() {
+  return useQuery({
+    queryKey: ["patterns"],
+    staleTime: 300_000,
+    queryFn: () =>
+      apiFetch<PatternReport>("/intelligence/mine-patterns", {
+        method: "POST",
+        body: JSON.stringify({ lookback_months: 24, min_confidence: 0.6 }),
+      }),
+  });
+}
