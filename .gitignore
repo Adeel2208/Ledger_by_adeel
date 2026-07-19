@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# Databases & vector stores
+*.db
+*.sqlite3
+backend/vcbrain.db
+backend/.chroma/
+chroma/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.local
+
+# Data (keep seed structure, ignore heavy/scraped artifacts)
+backend/data/raw/
+backend/data/cache/
+backend/data/uploads/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Logs
+*.log
+logs/
+
+# Local tooling (vendored skill) — not part of the product
+.claude/

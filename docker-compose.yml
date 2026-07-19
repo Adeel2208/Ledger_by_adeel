@@ -1,0 +1,40 @@
+# Dev orchestration. For the hackathon you can run backend+frontend natively;
+# this is here for one-command spin-up and the Postgres+pgvector prod path.
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - db
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    env_file:
+      - ./frontend/.env
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host
+
+  # Optional prod-path database (dev defaults to SQLite; enable by setting DATABASE_URL).
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: vcbrain
+      POSTGRES_PASSWORD: vcbrain
+      POSTGRES_DB: vcbrain
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

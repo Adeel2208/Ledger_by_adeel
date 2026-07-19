@@ -1,0 +1,54 @@
+"""FastAPI application factory.
+
+Wires the Experience-layer routers, cross-cutting middleware, and the background
+scheduler. Keep this thin — orchestration belongs in `app/services`, not here.
+"""
+from __future__ import annotations
+
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.api.router import api_router
+from app.core.config import get_settings
+
+settings = get_settings()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: launch the outbound-sourcing scheduler (APScheduler).
+    # from app.workers.scheduler import start_scheduler, shutdown_scheduler
+    # start_scheduler()
+    yield
+    # Shutdown:
+    # shutdown_scheduler()
+
+
+def create_app() -> FastAPI:
+    app = FastAPI(
+        title="The VC Brain",
+        description="AI deal-flow OS — $100K checks, decision-ready in 24 hours.",
+        version="0.1.0",
+        lifespan=lifespan,
+    )
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origin_list,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    app.include_router(api_router, prefix="/api/v1")
+
+    @app.get("/health", tags=["meta"])
+    def health() -> dict[str, str]:
+        return {"status": "ok", "env": settings.app_env}
+
+    return app
+
+
+app = create_app()

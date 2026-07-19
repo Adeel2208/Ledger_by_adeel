@@ -1,0 +1,39 @@
+# --- Web framework ---
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+python-multipart==0.0.17          # file uploads (pitch decks)
+sse-starlette==2.1.3              # dashboard live updates
+
+# --- Config & validation ---
+pydantic==2.10.3
+pydantic-settings==2.6.1
+
+# --- Persistence ---
+SQLAlchemy==2.0.36
+alembic==1.14.0
+# psycopg[binary]==3.2.3          # uncomment for Postgres (prod)
+# pgvector==0.3.6                 # uncomment for Postgres vector index (prod)
+
+# --- Vector store (dev) ---
+chromadb==0.5.23
+
+# --- LLM providers (provider-agnostic layer) ---
+openai>=1.68.0                    # structured outputs via chat.completions.parse
+anthropic>=0.40.0                 # optional alternate provider
+tenacity>=9.0.0                   # retry/backoff on transient API errors
+
+# --- Ingestion ---
+pypdf==5.1.0                      # deck parsing (PDF)
+python-pptx==1.0.2               # deck parsing (PPTX)
+python-docx==1.1.2               # deck parsing (DOCX)
+httpx==0.28.1                    # GitHub / arXiv / web API calls
+feedparser==6.0.11               # arXiv feeds
+rapidfuzz==3.10.1                # dedup / fuzzy entity resolution
+
+# --- Background jobs ---
+APScheduler==3.11.0
+
+# --- Dev / test ---
+pytest==8.3.4
+pytest-asyncio==0.24.0
+ruff==0.8.2
